@@ -1,0 +1,369 @@
+---
+title: "EDL"
+author: "Jacolien van Rij & Dorothée Hoppe"
+date: "10/8/2018"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{EDL: Examples of the functions in the package edl}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 4, fig.height = 4)
+```
+
+Here we provide astep-by-step overview of the core functions of the package using an example data set.
+
+
+## Loading library
+
+```{r load-packages,message=FALSE}
+library(edl)
+```
+
+## Example data 
+
+Load the example data from the package `edl`:
+
+```{r}
+data(dat)
+head(dat)
+```
+
+<br />
+
+## step 1: Prepare data 
+
+This data set lists all unique **learning events** (i.e., the *types*) and their associated frequencies. However, for a data set to function as input for the learning functions, the dataframe must include the columns `Cues` and `Outcomes`, and optionally `Frequency`. Note that if `Frequency` is not included, the frequency of each learning event is assumed to be 1. 
+
+First, we construct the columns `Cues` and `Outcomes` for this example simulation. Here we will simulate how two features `Color` and `Shape` may function as cues for their category `Category`. We will add a background cue "BG" to represent the learner. The different cues and outcomes are separated using an underscore (i.e., "_"). It is possible to another symbol, but then we will need to indicate this in the various functions (i.e., `RWlearning`) with the argument `split`.
+
+```{r}
+dat$Cues      <- paste("BG", dat$Shape, dat$Color, sep="_")
+dat$Outcomes  <- paste(dat$Category)
+dat$Frequency <- dat$Frequency2
+# remove remaining columns to simplify this example:
+dat <- dat[, c("Cues", "Outcomes", "Frequency")]
+# add ID for learning events:
+dat$ID <- 1:nrow(dat)
+head(dat)
+```
+
+Now the data `dat` defines `r nrow(dat)` unique learning events with their associated frequencies. 
+
+```{r}
+table(dat$Outcomes)
+```
+
+<br />
+
+## step 2: Create training data
+
+The **training data** lists all learning events (i.e., the *tokens*) in their order of presentation, one learning event per row. If no column with frequencies is specificied or all frequencies are 1, the training data mirrors the data set of learning events. The training data also determines the **order** in which the learning events are presented to the learning network. 
+
+```{r}
+# by default 1 run, with tokens randomized:
+train <- createTrainingData(dat)
+head(train)
+# Frequency is always 1:
+unique(train$Frequency)
+# total counts per outcome match original frequencies:
+table(train$Outcomes)
+table(train$ID)
+```
+
+Note that the function `createTrainingData` could also be used to train the network on multiple (blocked or randomized) runs. We refer to the examples in the function helpfile.
+
+<br />
+
+## step 3: Learning
+
+The function `RWlearning` trains the error-driven learning network. The output `wm` is a list with weight matrices, a weight matrix for each learning event (a learning event is basically a row in the data frame `dat`). The last weight matrix shows the connections after processing all data.
+
+```{r, eval=FALSE}
+wm <- RWlearning(train)
+```
+```{r, include=FALSE}
+wm <- RWlearning(train, progress = FALSE)
+```
+
+Inspection:
+
+```{r}
+length(wm)
+# ... which is the same as the number of rows in the training data:
+nrow(train)
+```
+
+
+<br />
+
+## step 4: Inspection
+
+We can now inspect the changes in the weights for after each learning event. The last weight matrix shows the connections after processing all data:
+
+```{r}
+# after the first learning event:
+wm[[1]]
+# the final state of the network:
+wm[[length(wm)]]
+```
+
+The function `getWM` retrieves the weight matrix after a specific event, and adds zero-weight connections for the not yet encountered cues and outcomes.
+
+```{r}
+# after the first learning event:
+getWM(wm,1)
+```
+
+We can use the functions `sapply` and `getWM` to add zero-weight connections to all states of the network:
+
+```{r}
+wm2 <- sapply(1:length(wm), function(x){getWM(wm,x)}, simplify = FALSE)
+# inspect the list of states:
+length(wm2)
+wm2[[1]]
+```
+
+The functions `getWeightsByCue` and `getWeightsByOutcome` could be used to extract the weights per cue or per outcome. 
+
+```{r}
+# weights for outcome "plant"
+weights <- getWeightsByOutcome(wm, outcome="plant")
+head(weights)
+tail(weights)
+```
+```{r}
+# weights for cue "red"
+weights <- getWeightsByCue(wm, cue="red")
+head(weights)
+tail(weights)
+```
+
+
+In addition, there are various functions to extract the activations for each learning event. The function `getActivations` is a wrapper that captures most common calculations, but other, more specialistic functions are described below. 
+
+```{r}
+act <- getActivations(wm, data=train)
+head(act)
+```
+
+Alternatively,the function `getActivations` can output all possible outcomes per learning event. 
+
+```{r}
+act <- getActivations(wm, data=train, select.outcomes = TRUE)
+head(act)
+```
+
+
+We may want to add the activation of observed outcome in separate column:
+
+```{r}
+act$Activation <- apply(act, 1, function(x){
+  out <- x['Outcomes']
+  return(as.numeric(x[out]))
+})
+head(act)
+```
+
+Note that `getActivations` only works for a single outcome in each learning event. With multiple outcomes, please use one of the other activation functions.
+
+<br />
+
+## step 5: Visualization
+
+Visualizing the change in weights between cues and outcomes is facilitated by two functions: `plotCueWeights` and `plotOutcomeWeights`. The first function retrieves the weights between a specific cue and all outcomes (or a selection of outcomes) for each learning event. The second function retrieves the weights between a specific outcome and all cues (or a selection of cues) for each learning.
+
+
+```{r plots-1, fig.width=8}
+oldpar <- par(mfrow=c(1,2), cex=1.1)
+
+# plot left:
+plotCueWeights(wm, cue="brown")
+
+# plot right:
+plotOutcomeWeights(wm, outcome="animal")
+
+par(oldpar)
+```
+
+Both plot functions have a range of arguments that can be used to change the layout, as illustrated for the same two plots below:
+
+
+```{r plots-2, fig.width=8}
+oldpar <- par(mfrow=c(1,2), cex=1.1)
+
+# plot left:
+# 1. get outcome values:
+out <- getValues(train$Outcomes, unique=TRUE)
+out <- out[out != "animal"]
+# 2. plot all outcomes, except 'plural':
+lab <- plotCueWeights(wm, cue="brown", select.outcomes = out, 
+                      col=1, add.labels=FALSE, xlab='', ylim=range(getWM(wm)))
+# 3. add plural:
+lab2 <- plotCueWeights(wm, cue="brown", select.outcomes = "animal", col=2, lwd=2, adj=0, add=TRUE, font=2)
+# 4. add legend:
+legend_margin('bottom', ncol=4, 
+              legend=c(lab2$labels, lab$labels), 
+              col=c(lab2$col, lab$col), lty=c(lab2$lty, lab$lty), 
+              lwd=c(lab2$lwd, lab$lwd), bty='n', cex=.85)
+
+
+# plot right, different layout variant:
+out <- getValues(dat$Cues, unique=TRUE)
+out <- out[out != "animal"]
+lab <- plotOutcomeWeights(wm, outcome="animal", select.cues = out, 
+                          col=alpha(1, f=.25), lty=1, pos=4, ylim=c(-.02,.2), font=2, ylim=range(getWM(wm)))
+lab2 <- plotOutcomeWeights(wm, outcome="animal", select.cues = "brown", col='red', lwd=2, pos=4, add=TRUE, font=2)
+
+par(oldpar)
+```
+
+
+Both plotfunctions are a wrapper around the functions `getWeightsByCue` and `getWeightsByOutcome`. These values could be used to extract the weights per cue or per outcome. 
+
+```{r getWeights-1}
+weights <- getWeightsByCue(wm, cue="brown")
+head(weights)
+```
+
+Similarly, we can visualize the change in activations using the function `plotActivations`, which is a wrapper around the function `getActivations`.
+
+```{r, fig.width=8, results='hold'}
+oldpar <- par(mfrow=c(1,2), cex=1.1)
+
+# an observed cueset:
+plotActivations(wm, cueset="BG_cat_brown")
+# an un-observed cueset:
+plotActivations(wm, cueset="BG_cat_yellow")
+
+par(oldpar)
+```
+
+<br/>
+
+
+## Extra: Continue training
+
+Another possibility worth mentioning is the possibility to continue training from an existing weight matrix. 
+
+```{r continue-1}
+# create a second data set with different frequencies:
+data(dat)
+head(dat)
+```
+
+We used the column `Frequency2`, and now we continue training with column `Frequency1`. Note that in the new data (rows 1 and 2, column `Frequency1`), there are much fewer brown animals than in the earlier training data (column `Frequency2`).
+
+```{r}
+dat$Cues      <- paste("BG", dat$Shape, dat$Color, sep="_")
+dat$Outcomes  <- paste(dat$Category)
+dat$Frequency <- dat$Frequency1
+# remove remaining columns to simplify this example:
+dat <- dat[, c("Cues", "Outcomes", "Frequency")]
+# add ID for learning events:
+dat$ID <- 1:nrow(dat)
+head(dat)
+
+# create training data:
+train2 <- createTrainingData(dat)
+```
+
+After creating the training data (one event per row), we continue training. We will use the end state of the previous training as starting point for the new training. Two methods are illustrated in the code block below:
+
+```{r}
+# continue learning from last weight matrix:
+wm2 <- RWlearning(train2, wm=getWM(wm), progress = FALSE)
+# number of learned event matches rows in dat2:
+nrow(train2)
+length(wm2)
+
+# Alternatively, add the learning events to the existing output list wm1:
+wm3 <- RWlearning(train2, wm=wm, progress = FALSE)
+# number of learned event are now added to wm1:
+length(wm3)
+```
+
+Now we can visualize how changing the input frequencies changes the connection weights. The red line in the plot visualizes the change in how predictable the color "brown" is for an animal.
+
+```{r}
+out <- getValues(dat$Cues, unique=TRUE)
+out <- out[out != "animal"]
+lab <- plotOutcomeWeights(wm3, outcome="animal", 
+                          select.cues = out, 
+                          col=alpha(1, f=.25), lty=1, pos=4, 
+                          ylim=c(-.02,.2), font=2, ylim=range(getWM(wm3)),
+                          xmark=TRUE, ymark=TRUE, las=1)
+lab2 <- plotOutcomeWeights(wm3, outcome="animal", 
+                           select.cues = "brown", col='red', 
+                           lwd=2, pos=4, add=TRUE, font=2)
+abline(v=length(wm), lty=3)
+```
+
+<br/>
+
+
+## step 6: Activations
+
+The activation of outcomes reflect the learner's expectation that this outcome will occur, based on the present cues.
+
+The `edl` package includes a series different functions to calculate the activativations for outcomes:
+
+- `activationsMatrix`: Calculate activation based on a static state of the network. The basic activation function that is called by the other activation functions.
+
+```{r}
+# select weight matrix:
+mat <- getWM(wm)
+# for a cueset:
+activationsMatrix(mat,cues="BG_cat_brown")
+# for a specific outcome:
+activationsMatrix(mat,cues="BG_cat_brown", select.outcomes = "animal")
+# for a group of cuesets (all connection weights will be added):
+activationsMatrix(mat,cues=c("BG_cat_brown", "BG_cat_blue"))
+```
+
+- `activationsEvents`: Calculate activations for each learning event in the training data. 
+```{r}
+# new dummy data:
+dat <- data.frame(Cues = c("noise", "noise", "light"),
+                  Outcomes = c("food", "other", "food_other"),
+                  Frequency = c(5, 10, 15) )
+dat$Cues <- paste("BG", dat$Cues, sep="_")                  
+train <- createTrainingData(dat)
+wm <- RWlearning(train, progress = FALSE)
+
+# list with activations for observed outcomes:
+act <- activationsEvents(wm, data=train)
+head(act)
+# calculate max activation:
+maxact <- lapply(act, function(x){ return(max(x, na.rm=TRUE)) }) 
+unlist(maxact)
+
+# Using argument 'fun':
+act <- activationsEvents(wm, data=train, fun="max")
+head(act)
+```
+
+- `activationsCueSet`: Calculate activations for one or multiple cuesets.
+
+```{r}
+# list with activations for observed outcomes:
+act <- activationsCueSet(wm, cueset=c("BG_noise", "BG_light", "BG_somethingelse"))
+names(act)
+head(act[[1]])
+# also activations for non-trained connections:
+head(act[[3]])
+```
+
+
+- `activationsOutcomes`: Calculate activations per learning event for all outcomes in the data.
+
+```{r}
+# list with activations for observed outcomes:
+act <- activationsOutcomes(wm, data=train)
+head(act)
+```
+
+<br />
+

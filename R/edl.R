@@ -1,0 +1,53 @@
+#' Toolbox for Error-Driven Learning Simulations with Two-Layer Networks
+#'
+#' The package 'edl' provides a set of functions that facilitate 
+#' the evaluation, interpretation, and visualization of small error-driven 
+#' learning simulations. 
+#' 
+#' Error-driven learning is based on the Widrow & Hoff (1960) learning 
+#' rule and the Rescorla-Wagner's learning 
+#' equations (Rescorla & Wagner, 1972), which are also at the core of 
+#' Naive Discrimination Learning (Baayen et al, 2011). Error-driven can 
+#' be used to explain bottom-up human learning 
+#' (Hoppe et al, under revision), but is also at the 
+#' core of artificial neural networks applications in the form of the 
+#' Delta rule. 
+#' This package provides a set of functions for building 
+#' small-scale simulations to investigate the dynamics of error-driven 
+#' learning and it's interaction with the structure of the input. For 
+#' modeling error-driven learning using the Rescorla-Wagner equations 
+#' the package 'ndl' (Baayen et al, 2011) is available on CRAN at 
+#' \url{https://cran.r-project.org/package=ndl}. However, the package 
+#' currently only allows tracing of a cue-outcome combination, rather 
+#' than returning the learned networks.  
+#' To fill this gap, we implemented a new package with 
+#' a few functions that facilitate inspection of the networks for small 
+#' error driven learning simulations. Note that our functions are not 
+#' optimized for training large data sets (no parallel processing), as 
+#' they are intended for small scale simulations and course examples. 
+#' (Consider the python implementation \code{pyndl} 
+#' \url{https://pyndl.readthedocs.io/en/latest/} for that purpose.) 
+#'
+#' @section Getting started:
+#' \itemize{
+#' \item \code{vignette("edl", package="edl")} - 
+#' summarizes the core functions for training and visualization of results.
+#' }
+#' Also available online: \url{https://jacolienvanrij.com/Rpackages/edl/}.
+#'
+#' @section References:
+#' Dorothée Hoppe, Petra Hendriks, Michael Ramscar, & Jacolien van Rij 
+#' (under revision): An exploration of error-driven learning in simple 
+#' two-layer networks from a discriminative learning perspective. 
+#' Accepted with minor revisions.
+#'
+#' @author
+#' Jacolien van Rij and Dorothée Hoppe, 
+#' originally based on the package 'ndl'.
+#'
+#' Maintainer: Jacolien van Rij (\email{j.c.van.rij@rug.nl})
+#'
+#' University of Groningen, The Netherlands
+#' @docType package
+#' @name edl
+NULL
