@@ -1,6 +1,6 @@
 Package: edl
-Version: 1.0
-Date: 2021-04-01
+Version: 1.1
+Date: 2021-09-15
 Title: Toolbox for Error-Driven Learning Simulations with Two-Layer
         Networks
 Authors@R: c( person("Jacolien", "van Rij", email="j.c.van.rij@rug.nl", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7445-5647")), person("Dorothée", "Hoppe", email="d.b.hoppe@rug.nl", role = c("aut")))
@@ -14,8 +14,8 @@ Suggests: knitr, rmarkdown
 RoxygenNote: 7.1.0
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2021-04-09 12:54:36 UTC; jacolien
+Packaged: 2021-09-16 09:48:01 UTC; jacolien
 Author: Jacolien van Rij [aut, cre] (<https://orcid.org/0000-0001-7445-5647>),
   Dorothée Hoppe [aut]
 Repository: CRAN
-Date/Publication: 2021-04-12 07:50:02 UTC
+Date/Publication: 2021-09-20 07:40:05 UTC

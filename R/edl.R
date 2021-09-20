@@ -37,9 +37,9 @@
 #'
 #' @section References:
 #' Dorothée Hoppe, Petra Hendriks, Michael Ramscar, & Jacolien van Rij 
-#' (under revision): An exploration of error-driven learning in simple 
+#' (2021): An exploration of error-driven learning in simple 
 #' two-layer networks from a discriminative learning perspective. 
-#' Accepted with minor revisions.
+#' To appear in Behavior Research Methods.
 #'
 #' @author
 #' Jacolien van Rij and Dorothée Hoppe, 

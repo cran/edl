@@ -93,18 +93,18 @@ RWlearningNoCueCompetition <- function(data, wm=NULL,
         setTxtProgressBar(pb, i)
       }
       wm <- updateWeightsNoCueCompetition(cur.cues=getValues(data[i,]$Cues, ...), 
-                          cur.outcomes=getValues(data[i,]$Outcomes, ...), 
-                          wm=wm, eta=eta, lambda = lambda, 
-                          alpha = alpha, beta1 = beta1, beta2 = beta2)
+                                          cur.outcomes=getValues(data[i,]$Outcomes, ...), 
+                                          wm=wm, eta=eta, lambda = lambda, 
+                                          alpha = alpha, beta1 = beta1, beta2 = beta2)
       out[[length(out)+1]] = wm
     }
     close(pb)
   }else{
     for(i in 1:nrow(data)){
       wm <- updateWeightsNoCueCompetition(cur.cues=getValues(data[i,]$Cues, ...), 
-                          cur.outcomes=getValues(data[i,]$Outcomes, ...), 
-                          wm=wm, eta=eta, lambda = lambda, 
-                          alpha = alpha, beta1 = beta1, beta2 = beta2)
+                                          cur.outcomes=getValues(data[i,]$Outcomes, ...), 
+                                          wm=wm, eta=eta, lambda = lambda, 
+                                          alpha = alpha, beta1 = beta1, beta2 = beta2)
       out[[length(out)+1]] = wm
     }
   }

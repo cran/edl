@@ -86,15 +86,17 @@ updateWeightsNoCueCompetition <- function(cur.cues, cur.outcomes,
     wm <- checkWM(cues=cur.cues, outcomes=cur.outcomes, wm=wm)
   }
   
-  Lambda = rep(0, ncol(wm))
-  Lambda[which(colnames(wm) %in% cur.outcomes)] <- lambda
+  LambdaArray = rep(0, ncol(wm))
+  LambdaArray[which(colnames(wm) %in% cur.outcomes)] <- lambda
+  Lambda = matrix(rep(LambdaArray, length(cur.cues)), nrow=length(cur.cues), byrow=TRUE)
   
   # determine learning rate:
-  lr = rep(eta, length(Lambda))
+  lr = rep(eta, length(LambdaArray))
   if(is.null(eta)){
-    lr = alpha * (beta1*Lambda + beta2*(lambda-Lambda))
+    lr = alpha * (beta1*LambdaArray + beta2*(lambda-LambdaArray))
   }
+  LR = matrix(rep(lr, length(cur.cues)), nrow=length(cur.cues), byrow=TRUE)
   
-  wm[cur.cues,] =  wm[cur.cues,] + lr * (Lambda - wm[cur.cues,])
+  wm[cur.cues,] =  wm[cur.cues,] + LR * (Lambda - wm[cur.cues,])
   return(wm)
 }

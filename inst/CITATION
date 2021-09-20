@@ -1,0 +1,19 @@
+year <- sub("-.*", "", meta$Date)
+note <- sprintf("R package version %s", meta$Version)
+
+bibentry(bibtype = "Misc",
+	 title = "{edl}: Toolbox for Error-Driven Learning Simulations with Two-Layer Networks",
+	 author = c(person("Jacolien","van Rij"),
+	     person("Dorothée", "Hoppe")),
+	 year = year,
+	 note = note)
+
+bibentry(bibtype = "Article",
+	 title = "An Exploration of Error-Driven Learning in Simple Two-Layer Networks From a Discriminative Learning Perspective",
+	 author = c(person("Dorothée", "Hoppe"),
+	 person("Petra", "Hendriks"),
+	 person("Michael", "Ramscar"),
+	 person("Jacolien","van Rij")),
+	 year = 2021,
+	 journal="Behavior Research Methods",
+	 note = "to appear")
